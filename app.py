@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import socket
+import os
 
 class WrongAmountExpection(Exception):
   """Raise for my specific kind of exception"""
@@ -62,15 +63,29 @@ def parsePostRequest(request,filename):
   chatFile.write("\n"+sender+","+msg)
   return "<p>SUCCESS</p>"
 
+def renderChatRooms(path):
+  chatRoomHtml = ""
+  rooms = os.listdir(path)
+  for room in rooms:
+    chatRoomHtml += "<p><a href=/" + room + ">" + room + "</a></p>"
+  return chatRoomHtml
+
 def main():
   # Define socket host and port
-  SERVER_HOST = '0.0.0.0'
+  s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  s.connect(("8.8.8.8", 80))
+  ip = s.getsockname()[0]
+  s.close()
+  print(ip)
+
+  SERVER_HOST = 'localhost'
+  SERVER_ADDR = (ip, 8000)
   SERVER_PORT = 8000
   
   # Create socket
   server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  server_socket.bind((SERVER_HOST, SERVER_PORT))
+  server_socket.bind(SERVER_ADDR)
   server_socket.listen(1)
 
   print('Listening on port %s ...' % SERVER_PORT)
@@ -83,6 +98,8 @@ def main():
     # Get the client request
     requestRaw = client_connection.recv(1024)
     request = requestRaw.decode()
+    print(request)
+    print(requestRaw)
 
     headers = parseHeader(request)
     
@@ -99,6 +116,10 @@ def main():
       chatFile = headers["REQUEST"]["PATH"].split("/")[1].replace("?","")
       if chatFile == "favicon.ico":
         response += "You idiot tried to get my favicon"
+      elif chatFile == "":
+        response += "<h1>Chat rooms:</h1>"
+        response += renderChatRooms("pages")
+        response += "<p>To add new chat room contact server hoster</p>"
       elif headers["REQUEST"]["TYPE"] == "POST":
         tmpResponce = parsePostRequest(request,chatFile)
         response += upperHtml
