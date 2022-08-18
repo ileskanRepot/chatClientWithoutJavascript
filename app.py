@@ -34,15 +34,16 @@ def parseHeader(headerString):
   return headerDic
 
 def illegalFilenameCheck(filename):
+  print("File name check", filename)
   if ".." in filename or "~" in filename or filename == ".":
-    return False
-  return True
+    return True
+  return False
   
 
 def renderChats(filename):
   if illegalFilenameCheck(filename):
     print ("Error you fool")
-    raise IllegalFilenameExpection
+    raise IllegalFilenameExpection(filename)
   chatList = open("pages/"+filename, "r").read().split("\n")
   chatString = "<div class=\"SenderMsg\"><p class=\"Sender\">Sender</p><p class=\"Msg\">Msg</p></div>\n"
   for chat in chatList:
@@ -66,9 +67,9 @@ def parsePostRequest(request,filename):
     raise FileNameTooLongExpection(filename)
   if len(splittedMsg) != 2:
     raise WrongAmountExpection
-  if ".." in filename or "~" in filename:
+  if illegalFilenameCheck(filename):
     print ("Error you fool")
-    raise IllegalFilenameExpection
+    raise IllegalFilenameExpection(filename)
 
   firstPart = splittedMsg[0].split("=")
   if len(firstPart) != 2:
@@ -91,6 +92,9 @@ def parsePostRequest(request,filename):
     raise NotMsgOrSenderExpection(secondPart[0])
 
   if illegalFilenameCheck(filename):
+    raise IllegalFilenameExpection(filename)
+
+  if msg == "" or sender == "":
     raise NotMsgOrSenderExpection(". You missed other")
 
   chatFile = open("pages/"+filename, "a")
