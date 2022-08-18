@@ -34,8 +34,9 @@ def parseHeader(headerString):
   return headerDic
 
 def illegalFilenameCheck(filename):
-  if ".." in filename or "~" in filename:
+  if ".." in filename or "~" in filename or filename == ".":
     return False
+  return True
   
 
 def renderChats(filename):
@@ -112,11 +113,9 @@ def main():
   s.connect(("8.8.8.8", 80))
   ip = s.getsockname()[0]
   s.close()
-  print(ip)
 
-  SERVER_HOST = 'localhost'
   SERVER_ADDR = (ip, 8000)
-  SERVER_PORT = 8000
+  print(str(ip)+":"+str(SERVER_ADDR[1]))
   
   # Create socket
   server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -124,13 +123,13 @@ def main():
   server_socket.bind(SERVER_ADDR)
   server_socket.listen(1)
 
-  print('Listening on port %s ...' % SERVER_PORT)
+  print('Listening on port %s ...' % SERVER_ADDR[1])
   
   while True:
     # Wait for client connections
     client_connection, client_address = server_socket.accept()
   
-    print("Requested")
+    print("Requested from:",client_address[0])
     # Get the client request
     requestRaw = client_connection.recv(1024)
     print("requestRaw:\n"+str(requestRaw))
