@@ -34,7 +34,6 @@ def parseHeader(headerString):
   return headerDic
 
 def illegalFilenameCheck(filename):
-  print("File name check", filename)
   if ".." in filename or "~" in filename or filename == ".":
     return True
   return False
